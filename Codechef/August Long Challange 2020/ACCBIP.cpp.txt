@@ -1,0 +1,191 @@
+#include <iostream>
+#include<bits/stdc++.h>
+using namespace std;
+
+
+long long int fun(long long int num,int colour,vector<long long int> lines_set[]){
+    
+    
+    // cout<<" for colour = "<<colour<<" ans after removing lines = "<<num<<endl;
+    
+    //removing lines from set
+    vector<long long int> lines = lines_set[colour];
+    for(long long int i=0;i<lines.size() && num>0 ;i++){
+        
+        long long int temp = min(lines[i],num);
+        lines[i] = lines[i] - temp;
+        num = num - temp;
+    
+    }
+    
+    if(num>0){
+        return 0;
+    }
+    
+    // long long int index=0;
+    // while(index<lines.size() && lines[index]==0){
+    //     index++;
+    // }
+    
+    // while(num>0  && lines.size()!=0){
+        
+    //     if(num>lines[0]){
+    //         num = num - lines[0];
+    //         lines.erase(lines.begin());
+    //     }else{
+    //         lines[0] = lines[0] - num;
+    //         break;
+    //     }
+    // }
+    
+    // cout<<"lines after removal"<<endl;
+    // for(int i=0;i<lines.size();i++){
+    //     cout<<lines[i];
+    // }cout<<endl;
+    
+    // long long int ans=0;
+    
+    // for(long long int i=index;i<lines.size()-2;i++){
+    //     // if(lines[i]<=0){
+    //     //     continue;
+    //     // }
+    //     for(long long int j=i+1;j<lines.size()-1;j++){
+    //         // if(lines[j]==0){
+    //         //     continue;
+    //         // }
+    //         for(long long int k=j+1;k<lines.size();k++){
+    //             // if(lines[k]==0){
+    //             //     continue;
+    //             // }
+    //             ans = ans + lines[i]*lines[j]*lines[k];
+    //         }
+    //     }
+    // }
+    
+    // cout<<" ans = "<<ans<<endl;
+    
+    // return ans;
+    
+    // if(lines_set[colour].size()-num>=3){
+    //     return ncr(lines_set[colour].size()-num,3);
+    // }
+    // return 0;
+    
+    
+    
+    // --------------
+    
+    long long int sum1 = 0; 
+    long long int k = lines.size();
+    for (int i=0; i<k; i++) 
+        sum1 += lines[i]; 
+  
+    // calculating sum2. sum2 = m1*m2 + m2*m3 + ... 
+    long long int sum2 = 0; 
+    long long int temp[k+1];  // Needed for sum3 
+    for (long long int i=0; i<k; i++) 
+    { 
+        temp[i] = lines[i]*(sum1-lines[i]); 
+        sum2 += temp[i]; 
+    } 
+    sum2 /= 2; 
+  
+    // calculating sum3 which gives the final answer 
+    // m1 * m2 * m3 + m2 * m3 * m4 + ... 
+    long long int sum3 = 0; 
+    for (long long int i=0; i<k; i++) 
+        sum3 += lines[i]*(sum2-temp[i]); 
+    sum3 /= 3; 
+  
+    return sum3;
+}
+
+
+int main() {
+    long long int t;
+    cin>>t;
+    
+    while(t--){
+       long long int N,C,K;
+       cin>>N>>C>>K;
+       
+       //each index = colour
+       //map of slope and count
+       unordered_map<long long int,int> colour[C+1];
+       
+       //each index = colour
+       //value = set of count of lines per unique slope
+       vector<long long int> lines[C+1];
+       
+       for(int i=1;i<=N;i++){
+           long long int a,b,col;
+           cin>>a>>b>>col;
+           
+           //a is the slope
+           colour[col][a]++;
+       }
+       
+       long long int V[C+1]={0};
+       for(long long int i=1;i<=C;i++){
+           cin>>V[i];
+       }
+       
+       
+       for(long long int i=1;i<=C;i++){
+           vector<long long int> lines_set;
+           for(auto it : colour[i]){
+               lines_set.push_back(it.second);
+           }
+          sort(lines_set.begin(),lines_set.end());
+           lines[i] = lines_set;
+       }
+       
+    //   cout<<" priniting line set"<<endl;
+    //   for(int i=1;i<=C;i++){
+    //       cout<<" for colour = "<<i<<endl;
+    //       for(int j=0;j<lines[i].size();j++){
+    //           cout<<lines[i][j];
+    //       }cout<<"----"<<endl;
+    //   }
+       
+       
+       long long int dp[K+1][C+1];
+       long long int fun_mem[K+1][C+1];
+       for(int i=0;i<=K;i++){
+           for(long long int j=0;j<=C;j++){
+               dp[i][j] = LLONG_MAX;
+               if(j==0){
+                   dp[i][j]=0;
+               }
+               
+               fun_mem[i][j] = -1;
+           }
+       }
+       
+       for(long long int i=0;i<=K;i++){
+        //   cout<<" -------for k = "<<i<<endl;
+           for(long long int j=1;j<=C;j++){
+               long long int max_lines_rem = i/V[j];
+               for(long long int k=0;k<=max_lines_rem;k++){
+                   
+                   //k = num of lines removed;
+                   //value removed
+                   long long int val_rem = k*V[j];
+                  if(fun_mem[k][j]==-1){
+                       fun_mem[k][j] = fun(k,j,lines);
+                    //   cout<<"fun mem ="<<fun_mem[k][j]<<endl; 
+                  }
+                   
+                   dp[i][j] = min(dp[i][j] , dp[i-val_rem][j-1] + fun_mem[k][j] );
+                //   cout<<" dp at i="<<i<<" j="<<j<<" value="<<dp[i][j]<<endl;
+               }
+           }
+       }
+       
+    //   cout<<" final ans =";
+      cout<<dp[K][C]<<endl;
+       
+       
+    }
+  return 0;
+}
